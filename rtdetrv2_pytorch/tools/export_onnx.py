@@ -43,8 +43,8 @@ def main(args, ):
 
     model = Model()
 
-    data = torch.rand(1, 3, 640, 640)
-    size = torch.tensor([[640, 640]])
+    data = torch.rand(1, 3, args.input_size, args.input_size)
+    size = torch.tensor([[args.input_size, args.input_size]])
     _ = model(data, size)
 
     dynamic_axes = {
@@ -76,8 +76,8 @@ def main(args, ):
         dynamic = True 
         # input_shapes = {'images': [1, 3, 640, 640], 'orig_target_sizes': [1, 2]} if dynamic else None
         input_shapes = {'images': data.shape, 'orig_target_sizes': size.shape} if dynamic else None
-        onnx_model_simplify, check = onnxsim.simplify(args.file_name, input_shapes=input_shapes, dynamic_input_shape=dynamic)
-        onnx.save(onnx_model_simplify, args.file_name)
+        onnx_model_simplify, check = onnxsim.simplify(args.output_file, input_shapes=input_shapes, dynamic_input_shape=dynamic)
+        onnx.save(onnx_model_simplify, args.output_file)
         print(f'Simplify onnx model {check}...')
 
 
@@ -87,8 +87,10 @@ if __name__ == '__main__':
     parser.add_argument('--config', '-c', type=str, )
     parser.add_argument('--resume', '-r', type=str, )
     parser.add_argument('--output_file', '-o', type=str, default='model.onnx')
+    parser.add_argument('--input_size', '-s', type=int, default=640)
     parser.add_argument('--check',  action='store_true', default=False,)
     parser.add_argument('--simplify',  action='store_true', default=False,)
+    
 
     args = parser.parse_args()
 
