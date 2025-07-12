@@ -1,6 +1,6 @@
 torch>=2.0.1
-torchvision>=0.15.2
-pycocotools
+torchvision>=0.15.2, <=0.19.1
+pycocotools==2.0.8
 PyYAML
 tensorboard
 scipy

@@ -69,6 +69,18 @@ class DetSolver(BaseSolver):
             if dist_utils.is_dist_available_and_initialized():
                 self.train_dataloader.sampler.set_epoch(epoch)
             
+            module = self.ema.module if self.ema else self.model
+            test_stats, coco_evaluator = evaluate(
+                module, 
+                self.criterion, 
+                self.postprocessor, 
+                self.val_dataloader, 
+                self.evaluator, 
+                self.device
+            )
+
+
+
             train_stats = train_one_epoch(
                 self.model, 
                 self.criterion, 
@@ -210,7 +222,7 @@ class DetSolver(BaseSolver):
         from faster_coco_eval.extra import Curves
         from faster_coco_eval.extra import PreviewResults
 
-        cocoGt = COCO("/media/herd-i/Local Disk/herdi/object_detection/dataset/cow/annotations/instances_val.json")
+        cocoGt = COCO("/media/herd-i/Local Disk/herdi/bcs_object_detection/dataset/cow/annotations/instances_val.json")
         cocoDt = cocoGt.loadRes(batch_results)
         iouType = "bbox"
         cocoEval = COCOeval_faster(cocoGt, cocoDt, iouType, extra_calc=True)
@@ -228,10 +240,24 @@ class DetSolver(BaseSolver):
         self.wandb_writer.log({"F1 curve": f1_fig})
 
 
-        batch_results = [item for item in batch_results if item['score'] > 0.5]
-        cocoDt = cocoGt.loadRes(batch_results)
-        iouType = "bbox"
-        cocoEval = COCOeval_faster(cocoGt, cocoDt, iouType, extra_calc=True)
+        # filtered_results = [item for item in batch_results if item['score'] > 0.5]
+
+        # filtered_results = []
+        # for item in batch_results:
+        #     if item['score'] > 0.5:
+        #         required_keys = ['image_id', 'category_id', 'bbox', 'score']
+        #         if not all(k in item for k in required_keys):
+        #             raise ValueError(f"Missing required COCO field in item: {item}")
+                
+        #         # Optional: add a custom id for debug/reference
+        #         item['dt_id'] = item.get('id', None)
+        #         filtered_results.append(item)
+
+
+
+        # cocoDt = cocoGt.loadRes(filtered_results)
+        # iouType = "bbox"
+        # cocoEval = COCOeval_faster(cocoGt, cocoDt, iouType, extra_calc=True)
         results = PreviewResults(
             cocoGt, cocoDt, iou_tresh=threshold_iou, iouType=iouType, useCats=False
         )
