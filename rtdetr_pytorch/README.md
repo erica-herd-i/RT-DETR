@@ -38,6 +38,8 @@ Notes
 <details>
 <summary>Install</summary>
 
+python3.10
+
 ```bash
 pip install -r requirements.txt
 ```
